@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" href="img/meubanco-favicon.png" type="image/x-icon">
+<title>MeuBanco</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1a2236;
+    --card: #151d2e;
+    --card2: #1e2d45;
+    --border: #243047;
+    --accent: #00d4aa;
+    --accent2: #0099ff;
+    --accent3: #f59e0b;
+    --accent4: #ef4444;
+    --text: #e8edf5;
+    --text2: #8899bb;
+    --text3: #4a5a7a;
+    --success: #22c55e;
+    --sidebar-w: 220px;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; width: 100%; height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ═══════════════════════════════════════
+     SCREEN 1 – LOGIN
+  ═══════════════════════════════════════ */
+  #s-login {
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse 80% 80% at 50% 0%, #0d2048 0%, var(--bg) 70%);
+    position: relative;
+    overflow: hidden;
+  }
+  #s-login::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 39px, rgba(0,212,170,.04) 40px
+    ),
+    repeating-linear-gradient(
+      90deg, transparent, transparent 39px, rgba(0,212,170,.04) 40px
+    );
+  }
+  .login-card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 44px;
+    width: 400px;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(0,212,170,.06);
+    animation: fadeUp .6s ease both;
+  }
+  .login-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+  .login-logo .icon { font-size: 28px; }
+  .login-logo span { font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
+  .login-logo span em { color: var(--accent); font-style: normal; }
+  .field-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .field-row { margin-bottom: 16px; }
+  .field-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,170,.12);
+  }
+  .field-input::placeholder { color: var(--text3); font-family: 'Sora', sans-serif; }
+  .field-inline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), #00b890);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #001a12;
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform .15s, box-shadow .15s;
+    letter-spacing: .01em;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,170,.35); }
+  .btn-primary:active { transform: translateY(0); }
+  .login-footer { text-align: center; margin-top: 20px; font-size: 12px; color: var(--text3); }
+  .login-footer a { color: var(--accent); text-decoration: none; }
+
+  /* ═══════════════════════════════════════
+     APP SHELL (screens 2-8)
+  ═══════════════════════════════════════ */
+  .app-shell {
+    flex-direction: row;
+    background: var(--bg);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .icon { font-size: 20px; }
+  .sidebar-logo span { font-size: 16px; font-weight: 700; }
+  .sidebar-logo span em { color: var(--accent); font-style: normal; }
+
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 0 8px;
+    margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: background .15s, color .15s;
+    margin-bottom: 2px;
+    user-select: none;
+  }
+  .nav-item .nav-icon { font-size: 17px; width: 22px; text-align: center; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(0,212,170,.12); color: var(--accent); }
+  .nav-item.active .nav-icon { filter: drop-shadow(0 0 4px var(--accent)); }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--bg3);
+  }
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: #001;
+    flex-shrink: 0;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 10px; color: var(--text3); }
+
+  /* MAIN */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-title { font-size: 16px; font-weight: 700; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: #001; cursor: pointer;
+  }
+  .notif-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    cursor: pointer;
+    padding: 6px 10px;
+    font-size: 16px;
+  }
+
+  /* CONTENT */
+  .content { padding: 28px; flex: 1; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+  .card-sm { padding: 16px 20px; }
+  .card-title { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+
+  /* ═══════════════════════════════════════
+     SCREEN 2 – DASHBOARD
+  ═══════════════════════════════════════ */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .balance-card {
+    background: linear-gradient(135deg, #0d2848 0%, #0a1f3a 100%);
+    border: 1px solid rgba(0,212,170,.2);
+    border-radius: var(--radius);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    grid-column: span 2;
+  }
+  .balance-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(0,212,170,.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .balance-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; }
+  .balance-value { font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 500; color: var(--accent); letter-spacing: -.5px; }
+  .balance-sub { font-size: 12px; color: var(--text3); margin-top: 8px; }
+  .balance-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .bal-btn {
+    background: rgba(0,212,170,.1);
+    border: 1px solid rgba(0,212,170,.2);
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .bal-btn:hover { background: rgba(0,212,170,.2); }
+
+  .stat-card { border-radius: var(--radius); padding: 20px; }
+  .stat-icon { font-size: 24px; margin-bottom: 8px; }
+  .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 500; }
+  .stat-lbl { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  .shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .shortcut {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .15s;
+  }
+  .shortcut:hover {
+    border-color: var(--accent);
+    background: rgba(0,212,170,.05);
+    transform: translateY(-2px);
+  }
+  .shortcut-icon { font-size: 26px; margin-bottom: 8px; }
+  .shortcut-lbl { font-size: 12px; font-weight: 500; color: var(--text2); }
+
+  .recent-list { }
+  .recent-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .recent-item:last-child { border-bottom: none; }
+  .t-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .t-icon.out { background: rgba(239,68,68,.1); }
+  .t-icon.in  { background: rgba(34,197,94,.1); }
+  .t-info { flex: 1; }
+  .t-desc { font-size: 13px; font-weight: 500; }
+  .t-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .t-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 500; }
+  .t-val.out { color: var(--accent4); }
+  .t-val.in  { color: var(--success); }
+
+  /* ═══════════════════════════════════════
+     SCREEN 3 – EXTRATO
+  ═══════════════════════════════════════ */
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .filter-select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    padding: 9px 14px;
+    outline: none;
+    cursor: pointer;
+  }
+  .filter-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text2);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .filter-btn.active { border-color: var(--accent); color: var(--accent); }
+
+  .extrato-table { width: 100%; border-collapse: collapse; }
+  .extrato-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .extrato-table td {
+    padding: 14px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(36,48,71,.6);
+  }
+  .extrato-table tr:hover td { background: var(--bg3); }
+  .badge {
+    display: inline-block;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .badge-out { background: rgba(239,68,68,.12); color: #f87171; }
+  .badge-in  { background: rgba(34,197,94,.12);  color: #4ade80; }
+
+  /* ═══════════════════════════════════════
+     SCREEN 4 – TRANSFERÊNCIA
+  ═══════════════════════════════════════ */
+  .trans-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .form-field { margin-bottom: 18px; }
+  .form-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text2); margin-bottom: 6px; display: block; }
+  .form-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,170,.1); }
+  .form-select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238899bb' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+  }
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+  .tab {
+    flex: 1;
+    padding: 9px 14px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .tab.active { background: var(--card2); color: var(--text); }
+  .btn-block {
+    background: linear-gradient(135deg, var(--accent), #00b890);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #001a12;
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    margin-top: 8px;
+  }
+  .btn-block:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,170,.3); }
+
+  /* ═══════════════════════════════════════
+     SCREEN 5 – PIX
+  ═══════════════════════════════════════ */
+  .pix-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .pix-option {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .15s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .pix-option:hover { border-color: var(--accent2); background: rgba(0,153,255,.04); transform: translateY(-2px); }
+  .pix-opt-icon { font-size: 28px; flex-shrink: 0; }
+  .pix-opt-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .pix-opt-info p { font-size: 12px; color: var(--text2); }
+  .pix-keys {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .key-chip {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .key-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .key-chip.selected { border-color: var(--accent); color: var(--accent); background: rgba(0,212,170,.1); }
+
+  /* ═══════════════════════════════════════
+     SCREEN 6 – BOLETO
+  ═══════════════════════════════════════ */
+  .boleto-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .barcode-box {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+  }
+  .barcode-lines {
+    display: flex;
+    gap: 2px;
+    height: 80px;
+    align-items: stretch;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .bar { background: #111; flex-shrink: 0; }
+  .barcode-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #333; letter-spacing: .1em; word-break: break-all; }
+
+  /* ═══════════════════════════════════════
+     SCREEN 7 – CARTÕES
+  ═══════════════════════════════════════ */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  .credit-card {
+    border-radius: 18px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .2s;
+  }
+  .credit-card:hover { transform: scale(1.02); }
+  .credit-card.gold {
+    background: linear-gradient(135deg, #1a1200 0%, #3d2a00 50%, #1a1200 100%);
+    border: 1px solid rgba(245,158,11,.3);
+    box-shadow: 0 20px 40px rgba(245,158,11,.1);
+  }
+  .credit-card.blue {
+    background: linear-gradient(135deg, #00143a 0%, #002a6b 50%, #00143a 100%);
+    border: 1px solid rgba(0,153,255,.3);
+    box-shadow: 0 20px 40px rgba(0,153,255,.1);
+  }
+  .credit-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(255,255,255,.07) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .card-chip { font-size: 22px; margin-bottom: 16px; }
+  .card-number { font-family: 'JetBrains Mono', monospace; font-size: 15px; letter-spacing: .18em; margin-bottom: 16px; }
+  .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+  .card-holder { font-size: 11px; color: rgba(255,255,255,.5); margin-bottom: 4px; }
+  .card-name { font-size: 13px; font-weight: 600; }
+  .card-expiry { text-align: right; }
+  .card-limit-label { font-size: 10px; color: rgba(255,255,255,.4); }
+  .card-limit-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+
+  .card-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .c-stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .c-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 500; }
+  .c-stat-lbl { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  .card-actions { display: flex; gap: 10px; }
+  .card-action-btn {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    padding: 11px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    text-align: center;
+  }
+  .card-action-btn:hover { border-color: var(--accent4); background: rgba(239,68,68,.05); color: var(--accent4); }
+
+  /* ═══════════════════════════════════════
+     SCREEN 8 – SUCESSO
+  ═══════════════════════════════════════ */
+  #s-sucesso {
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse 80% 80% at 50% 50%, #0a2218 0%, var(--bg) 70%);
+    flex-direction: column;
+    gap: 0;
+  }
+  .success-container { text-align: center; animation: fadeUp .5s ease both; }
+  .success-icon {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--success), #16a34a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 46px;
+    margin: 0 auto 28px;
+    box-shadow: 0 0 60px rgba(34,197,94,.3);
+    animation: pulse-green 2s infinite;
+  }
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 60px rgba(34,197,94,.3); }
+    50% { box-shadow: 0 0 80px rgba(34,197,94,.5); }
+  }
+  .success-title { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+  .success-sub { font-size: 15px; color: var(--text2); margin-bottom: 36px; }
+  .success-detail {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 32px;
+    text-align: left;
+    min-width: 380px;
+    margin-bottom: 28px;
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-key { color: var(--text2); }
+  .detail-val { font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+  .success-btns { display: flex; gap: 12px; justify-content: center; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .btn-outline:hover { border-color: var(--text2); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    width: 420px;
+    animation: fadeUp .3s ease;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
+  .modal-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .modal-row:last-of-type { border: none; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+  .btn-cancel {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    padding: 12px;
+    cursor: pointer;
+  }
+  .btn-confirm {
+    flex: 1;
+    background: linear-gradient(135deg, var(--accent), #00b890);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #001a12;
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px;
+    cursor: pointer;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .see-all { font-size: 12px; color: var(--accent); cursor: pointer; text-decoration: none; }
+
+  /* progress bar */
+  .prog-bar { background: var(--bg3); border-radius: 100px; height: 6px; overflow: hidden; margin-top: 8px; }
+  .prog-fill { height: 100%; border-radius: 100px; transition: width .5s; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ SCREEN 1: LOGIN ═══════ -->
+<div id="s-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="icon">🏦</span>
+      <span>Meu<em>Banco</em></span>
+    </div>
+    <div class="field-inline">
+      <div class="field-row">
+        <div class="field-label">Agência</div>
+        <input class="field-input" type="text" value="0001" maxlength="4">
+      </div>
+      <div class="field-row">
+        <div class="field-label">Conta</div>
+        <input class="field-input" type="text" value="000001-0">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-label">Senha</div>
+      <input class="field-input" type="password" placeholder="Digite sua senha">
+    </div>
+    <button class="btn-primary" onclick="goTo('s-dashboard')">Entrar</button>
+    <div class="login-footer">
+      <a href="#" onclick="return false">Esqueci minha senha</a> &nbsp;·&nbsp; <a href="#" onclick="return false">Abrir conta</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SCREENS 2-7: APP SHELL ═══════ -->
+<div id="s-dashboard" class="screen app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="icon">🏦</span><span>Meu<em>Banco</em></span></div>
+    <div class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item active" onclick="goTo('s-dashboard')"><span class="nav-icon">🏠</span> Início</div>
+      <div class="nav-item" onclick="goTo('s-extrato')"><span class="nav-icon">📋</span> Extrato</div>
+      <div class="nav-item" onclick="goTo('s-transfer')"><span class="nav-icon">↔️</span> Transferências</div>
+      <div class="nav-item" onclick="goTo('s-pix')"><span class="nav-icon">⚡</span> Pix</div>
+      <div class="nav-item" onclick="goTo('s-boleto')"><span class="nav-icon">📄</span> Pagamentos</div>
+      <div class="nav-item" onclick="goTo('s-cartoes')"><span class="nav-icon">💳</span> Cartões</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Mais</div>
+      <div class="nav-item"><span class="nav-icon">📈</span> Investimentos</div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span> Serviços</div>
+      <div class="nav-item"><span class="nav-icon">👤</span> Perfil</div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="avatar">QJ</div>
+        <div class="user-info">
+          <div class="user-name">Qi Cliente</div>
+          <div class="user-role">Conta Corrente</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">Visão Geral</div>
+      <div class="topbar-right">
+        <button class="notif-btn">🔔</button>
+        <div class="topbar-avatar">QJ</div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="dashboard-grid">
+        <div class="balance-card">
+          <div class="balance-label">Saldo disponível</div>
+          <div class="balance-value">R$ 5.542,60</div>
+          <div class="balance-sub">Ag. 0001 · Conta 000001-0</div>
+          <div class="balance-actions">
+            <button class="bal-btn" onclick="goTo('s-transfer')">↑ Transferir</button>
+            <button class="bal-btn" onclick="goTo('s-pix')">⚡ Pix</button>
+            <button class="bal-btn" onclick="goTo('s-boleto')">📄 Pagar</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="stat-card card" style="background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(239,68,68,.04));border:1px solid rgba(239,68,68,.2);flex:1">
+            <div class="stat-icon">📤</div>
+            <div class="stat-val" style="color:#f87171">R$ 1.230,00</div>
+            <div class="stat-lbl">Saídas no mês</div>
+          </div>
+          <div class="stat-card card" style="background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(34,197,94,.04));border:1px solid rgba(34,197,94,.2);flex:1">
+            <div class="stat-icon">📥</div>
+            <div class="stat-val" style="color:#4ade80">R$ 6.772,60</div>
+            <div class="stat-lbl">Entradas no mês</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shortcuts-grid">
+        <div class="shortcut" onclick="goTo('s-transfer')">
+          <div class="shortcut-icon">↔️</div>
+          <div class="shortcut-lbl">Transferir</div>
+        </div>
+        <div class="shortcut" onclick="goTo('s-pix')">
+          <div class="shortcut-icon">⚡</div>
+          <div class="shortcut-lbl">Pix</div>
+        </div>
+        <div class="shortcut" onclick="goTo('s-boleto')">
+          <div class="shortcut-icon">📄</div>
+          <div class="shortcut-lbl">Pagar Boleto</div>
+        </div>
+        <div class="shortcut" onclick="goTo('s-cartoes')">
+          <div class="shortcut-icon">💳</div>
+          <div class="shortcut-lbl">Cartões</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <span class="section-title">Extrato recente</span>
+        <a class="see-all" onclick="goTo('s-extrato')">Ver tudo →</a>
+      </div>
+      <div class="card">
+        <div class="recent-item"><div class="t-icon out">📤</div><div class="t-info"><div class="t-desc">Transferência – Pedro Augusto</div><div class="t-date">10 Dez · TED</div></div><div class="t-val out">- R$ 350,00</div></div>
+        <div class="recent-item"><div class="t-icon in">📥</div><div class="t-info"><div class="t-desc">Pagamento recebido</div><div class="t-date">09 Dez · Pix</div></div><div class="t-val in">+ R$ 1.200,00</div></div>
+        <div class="recent-item"><div class="t-icon out">📤</div><div class="t-info"><div class="t-desc">Boleto – Energia Elétrica</div><div class="t-date">08 Dez · Boleto</div></div><div class="t-val out">- R$ 180,00</div></div>
+        <div class="recent-item"><div class="t-icon in">📥</div><div class="t-info"><div class="t-desc">Salário</div><div class="t-date">05 Dez · Crédito</div></div><div class="t-val in">+ R$ 5.500,00</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SCREEN 3: EXTRATO ═══════ -->
+<div id="s-extrato" class="screen app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="icon">🏦</span><span>Meu<em>Banco</em></span></div>
+    <div class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item" onclick="goTo('s-dashboard')"><span class="nav-icon">🏠</span> Início</div>
+      <div class="nav-item active" onclick="goTo('s-extrato')"><span class="nav-icon">📋</span> Extrato</div>
+      <div class="nav-item" onclick="goTo('s-transfer')"><span class="nav-icon">↔️</span> Transferências</div>
+      <div class="nav-item" onclick="goTo('s-pix')"><span class="nav-icon">⚡</span> Pix</div>
+      <div class="nav-item" onclick="goTo('s-boleto')"><span class="nav-icon">📄</span> Pagamentos</div>
+      <div class="nav-item" onclick="goTo('s-cartoes')"><span class="nav-icon">💳</span> Cartões</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Mais</div>
+      <div class="nav-item"><span class="nav-icon">📈</span> Investimentos</div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span> Serviços</div>
+      <div class="nav-item"><span class="nav-icon">👤</span> Perfil</div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-chip"><div class="avatar">QJ</div><div class="user-info"><div class="user-name">Qi Cliente</div><div class="user-role">Conta Corrente</div></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">Extrato</div>
+      <div class="topbar-right"><button class="notif-btn">🔔</button><div class="topbar-avatar">QJ</div></div>
+    </div>
+    <div class="content">
+      <div style="display:flex;gap:16px;margin-bottom:24px;">
+        <div class="card" style="flex:1;background:linear-gradient(135deg,rgba(0,212,170,.1),rgba(0,212,170,.03));border-color:rgba(0,212,170,.2)">
+          <div class="card-title">Saldo atual</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500;color:var(--accent)">R$ 5.542,60</div>
+        </div>
+        <div class="card" style="flex:1">
+          <div class="card-title">Período</div>
+          <div style="font-size:14px;font-weight:600">10 Dez – 30 Dez</div>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <select class="filter-select">
+          <option>Dezembro 2024</option>
+          <option>Novembro 2024</option>
+          <option>Outubro 2024</option>
+        </select>
+        <button class="filter-btn active">Todos</button>
+        <button class="filter-btn">Entrada</button>
+        <button class="filter-btn">Saída</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="extrato-table">
+          <thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>10/12</td><td>Transferência – Pedro Augusto</td><td><span class="badge badge-out">Saída</span></td><td class="t-val out">- R$ 350,00</td></tr>
+            <tr><td>09/12</td><td>Pagamento recebido – Pix</td><td><span class="badge badge-in">Entrada</span></td><td class="t-val in">+ R$ 1.200,00</td></tr>
+            <tr><td>08/12</td><td>Boleto – Energia Elétrica</td><td><span class="badge badge-out">Saída</span></td><td class="t-val out">- R$ 180,00</td></tr>
+            <tr><td>08/12</td><td>Mercado Livre – Estorno</td><td><span class="badge badge-in">Entrada</span></td><td class="t-val in">+ R$ 89,90</td></tr>
+            <tr><td>07/12</td><td>Restaurante Agora</td><td><span class="badge badge-out">Saída</span></td><td class="t-val out">- R$ 67,00</td></tr>
+            <tr><td>06/12</td><td>Freelance – Projeto Web</td><td><span class="badge badge-in">Entrada</span></td><td class="t-val in">+ R$ 800,00</td></tr>
+            <tr><td>05/12</td><td>Salário</td><td><span class="badge badge-in">Entrada</span></td><td class="t-val in">+ R$ 5.500,00</td></tr>
+            <tr><td>04/12</td><td>Streaming – Assinatura</td><td><span class="badge badge-out">Saída</span></td><td class="t-val out">- R$ 55,90</td></tr>
+            <tr><td>03/12</td><td>TED – Maria Fernanda</td><td><span class="badge badge-out">Saída</span></td><td class="t-val out">- R$ 300,00</td></tr>
+            <tr><td>01/12</td><td>Pix recebido – João Paulo</td><td><span class="badge badge-in">Entrada</span></td><td class="t-val in">+ R$ 250,00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SCREEN 4: TRANSFERÊNCIA ═══════ -->
+<div id="s-transfer" class="screen app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="icon">🏦</span><span>Meu<em>Banco</em></span></div>
+    <div class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item" onclick="goTo('s-dashboard')"><span class="nav-icon">🏠</span> Início</div>
+      <div class="nav-item" onclick="goTo('s-extrato')"><span class="nav-icon">📋</span> Extrato</div>
+      <div class="nav-item active" onclick="goTo('s-transfer')"><span class="nav-icon">↔️</span> Transferências</div>
+      <div class="nav-item" onclick="goTo('s-pix')"><span class="nav-icon">⚡</span> Pix</div>
+      <div class="nav-item" onclick="goTo('s-boleto')"><span class="nav-icon">📄</span> Pagamentos</div>
+      <div class="nav-item" onclick="goTo('s-cartoes')"><span class="nav-icon">💳</span> Cartões</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Mais</div>
+      <div class="nav-item"><span class="nav-icon">📈</span> Investimentos</div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span> Serviços</div>
+      <div class="nav-item"><span class="nav-icon">👤</span> Perfil</div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-chip"><div class="avatar">QJ</div><div class="user-info"><div class="user-name">Qi Cliente</div><div class="user-role">Conta Corrente</div></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">Transferências</div>
+      <div class="topbar-right"><button class="notif-btn">🔔</button><div class="topbar-avatar">QJ</div></div>
+    </div>
+    <div class="content">
+      <div class="tab-bar">
+        <div class="tab active" id="tab-ted" onclick="switchTab('ted')">TED / DOC</div>
+        <div class="tab" id="tab-conta" onclick="switchTab('conta')">Entre contas</div>
+      </div>
+      <div class="trans-grid">
+        <div>
+          <div class="section-title" style="margin-bottom:20px">Dados do destinatário</div>
+          <div class="form-field">
+            <label class="form-label">Banco</label>
+            <select class="form-select">
+              <option>Selecione o banco</option>
+              <option>001 – Banco do Brasil</option>
+              <option>033 – Santander</option>
+              <option>104 – Caixa Econômica</option>
+              <option>237 – Bradesco</option>
+              <option>341 – Itaú</option>
+              <option>756 – Sicoob</option>
+            </select>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-field">
+              <label class="form-label">Agência</label>
+              <input class="form-input" type="text" placeholder="0000">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Conta</label>
+              <input class="form-input" type="text" placeholder="00000-0">
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Tipo de conta</label>
+            <select class="form-select">
+              <option>Conta Corrente</option>
+              <option>Conta Poupança</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Nome do titular</label>
+            <input class="form-input" type="text" placeholder="Nome completo">
+          </div>
+          <div class="form-field">
+            <label class="form-label">CPF / CNPJ</label>
+            <input class="form-input" type="text" placeholder="000.000.000-00">
+          </div>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom:20px">Dados da transferência</div>
+          <div class="form-field">
+            <label class="form-label">Valor</label>
+            <input class="form-input" type="text" id="transfer-val" placeholder="R$ 0,00" oninput="formatMoney(this)">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Data</label>
+            <select class="form-select">
+              <option>Hoje (imediato)</option>
+              <option>Agendar</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Descrição (opcional)</label>
+            <input class="form-input" type="text" placeholder="Ex: Aluguel de dezembro">
+          </div>
+          <div class="card" style="background:rgba(0,153,255,.06);border-color:rgba(0,153,255,.2);margin-bottom:18px">
+            <div class="card-title">Saldo disponível</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;color:var(--accent2)">R$ 5.542,60</div>
+          </div>
+          <button class="btn-block" onclick="openModal()">Continuar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SCREEN 5: PIX ═══════ -->
+<div id="s-pix" class="screen app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="icon">🏦</span><span>Meu<em>Banco</em></span></div>
+    <div class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item" onclick="goTo('s-dashboard')"><span class="nav-icon">🏠</span> Início</div>
+      <div class="nav-item" onclick="goTo('s-extrato')"><span class="nav-icon">📋</span> Extrato</div>
+      <div class="nav-item" onclick="goTo('s-transfer')"><span class="nav-icon">↔️</span> Transferências</div>
+      <div class="nav-item active" onclick="goTo('s-pix')"><span class="nav-icon">⚡</span> Pix</div>
+      <div class="nav-item" onclick="goTo('s-boleto')"><span class="nav-icon">📄</span> Pagamentos</div>
+      <div class="nav-item" onclick="goTo('s-cartoes')"><span class="nav-icon">💳</span> Cartões</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Mais</div>
+      <div class="nav-item"><span class="nav-icon">📈</span> Investimentos</div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span> Serviços</div>
+      <div class="nav-item"><span class="nav-icon">👤</span> Perfil</div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-chip"><div class="avatar">QJ</div><div class="user-info"><div class="user-name">Qi Cliente</div><div class="user-role">Conta Corrente</div></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">Pix</div>
+      <div class="topbar-right"><button class="notif-btn">🔔</button><div class="topbar-avatar">QJ</div></div>
+    </div>
+    <div class="content">
+      <div class="pix-options">
+        <div class="pix-option">
+          <div class="pix-opt-icon">⚡</div>
+          <div class="pix-opt-info">
+            <h4>Enviar Pix</h4>
+            <p>Transfira para qualquer banco, na hora</p>
+          </div>
+        </div>
+        <div class="pix-option">
+          <div class="pix-opt-icon">📷</div>
+          <div class="pix-opt-info">
+            <h4>Pagar com QR Code</h4>
+            <p>Escaneie ou cole o código</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div>
+          <div class="section-title" style="margin-bottom:16px">Enviar Pix</div>
+          <div class="form-field">
+            <label class="form-label">Chave Pix</label>
+            <input class="form-input" type="text" placeholder="CPF, e-mail, celular ou chave aleatória">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Valor</label>
+            <input class="form-input" type="text" placeholder="R$ 0,00" oninput="formatMoney(this)">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Descrição</label>
+            <input class="form-input" type="text" placeholder="Mensagem (opcional)">
+          </div>
+          <button class="btn-block" onclick="openModal()">Continuar</button>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom:16px">Minhas chaves cadastradas</div>
+          <div class="pix-keys">
+            <span class="key-chip" onclick="selectKey(this)">📧 qi@email.com</span>
+            <span class="key-chip" onclick="selectKey(this)">📱 (11) 99999-0000</span>
+            <span class="key-chip" onclick="selectKey(this)">🔑 Chave aleatória</span>
+          </div>
+          <button class="btn-block" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);box-shadow:none;margin-top:4px" onclick="alert('Funcionalidade: cadastrar nova chave Pix')">+ Cadastrar nova chave</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SCREEN 6: BOLETO ═══════ -->
+<div id="s-boleto" class="screen app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="icon">🏦</span><span>Meu<em>Banco</em></span></div>
+    <div class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item" onclick="goTo('s-dashboard')"><span class="nav-icon">🏠</span> Início</div>
+      <div class="nav-item" onclick="goTo('s-extrato')"><span class="nav-icon">📋</span> Extrato</div>
+      <div class="nav-item" onclick="goTo('s-transfer')"><span class="nav-icon">↔️</span> Transferências</div>
+      <div class="nav-item" onclick="goTo('s-pix')"><span class="nav-icon">⚡</span> Pix</div>
+      <div class="nav-item active" onclick="goTo('s-boleto')"><span class="nav-icon">📄</span> Pagamentos</div>
+      <div class="nav-item" onclick="goTo('s-cartoes')"><span class="nav-icon">💳</span> Cartões</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Mais</div>
+      <div class="nav-item"><span class="nav-icon">📈</span> Investimentos</div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span> Serviços</div>
+      <div class="nav-item"><span class="nav-icon">👤</span> Perfil</div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-chip"><div class="avatar">QJ</div><div class="user-info"><div class="user-name">Qi Cliente</div><div class="user-role">Conta Corrente</div></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">Pagamento de Boletos</div>
+      <div class="topbar-right"><button class="notif-btn">🔔</button><div class="topbar-avatar">QJ</div></div>
+    </div>
+    <div class="content">
+      <div class="boleto-area">
+        <div>
+          <div class="section-title" style="margin-bottom:20px">Digitar linha digitável</div>
+          <div class="form-field">
+            <label class="form-label">Código de barras / Linha digitável</label>
+            <input class="form-input" type="text" id="boleto-code" placeholder="00000.00000 00000.000000 00000.000000 0 00000000000000" oninput="parseBoleto(this)">
+          </div>
+          <div id="boleto-details" style="display:none">
+            <div class="card" style="margin-bottom:16px">
+              <div class="modal-row"><span style="color:var(--text2)">Beneficiário</span><span style="font-weight:600">CEMIG – Energia Elétrica</span></div>
+              <div class="modal-row"><span style="color:var(--text2)">Vencimento</span><span style="font-weight:600;color:var(--accent3)">15/12/2024</span></div>
+              <div class="modal-row"><span style="color:var(--text2)">Valor</span><span style="font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--accent)">R$ 180,00</span></div>
+            </div>
+            <button class="btn-block" onclick="openModal()">Pagar Boleto</button>
+          </div>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom:16px">Ou digit a linha digitável</div>
+          <div class="barcode-box" id="barcode-box">
+            <div style="font-size:12px;color:#999;margin-bottom:16px">Aguardando código...</div>
+            <div class="barcode-lines" id="barcode-lines"></div>
+            <div class="barcode-num" id="barcode-num">—</div>
+          </div>
+          <div style="margin-top:16px">
+            <div class="card-title" style="margin-bottom:12px">Próximos vencimentos</div>
+            <div class="recent-item"><div class="t-icon out">📄</div><div class="t-info"><div class="t-desc">Aluguel</div><div class="t-date">Vence 20/12</div></div><div class="t-val out">R$ 1.200,00</div></div>
+            <div class="recent-item"><div class="t-icon out">📄</div><div class="t-info"><div class="t-desc">Internet</div><div class="t-date">Vence 22/12</div></div><div class="t-val out">R$ 99,90</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SCREEN 7: CARTÕES ═══════ -->
+<div id="s-cartoes" class="screen app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="icon">🏦</span><span>Meu<em>Banco</em></span></div>
+    <div class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item" onclick="goTo('s-dashboard')"><span class="nav-icon">🏠</span> Início</div>
+      <div class="nav-item" onclick="goTo('s-extrato')"><span class="nav-icon">📋</span> Extrato</div>
+      <div class="nav-item" onclick="goTo('s-transfer')"><span class="nav-icon">↔️</span> Transferências</div>
+      <div class="nav-item" onclick="goTo('s-pix')"><span class="nav-icon">⚡</span> Pix</div>
+      <div class="nav-item" onclick="goTo('s-boleto')"><span class="nav-icon">📄</span> Pagamentos</div>
+      <div class="nav-item active" onclick="goTo('s-cartoes')"><span class="nav-icon">💳</span> Cartões</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Mais</div>
+      <div class="nav-item"><span class="nav-icon">📈</span> Investimentos</div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span> Serviços</div>
+      <div class="nav-item"><span class="nav-icon">👤</span> Perfil</div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-chip"><div class="avatar">QJ</div><div class="user-info"><div class="user-name">Qi Cliente</div><div class="user-role">Conta Corrente</div></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">Meus Cartões</div>
+      <div class="topbar-right"><button class="notif-btn">🔔</button><div class="topbar-avatar">QJ</div></div>
+    </div>
+    <div class="content">
+      <div class="cards-grid">
+        <div class="credit-card gold">
+          <div class="card-chip">🟡</div>
+          <div class="card-number">•••• •••• •••• 4821</div>
+          <div class="card-bottom">
+            <div>
+              <div class="card-holder">TITULAR</div>
+              <div class="card-name">QI CLIENTE</div>
+            </div>
+            <div class="card-expiry">
+              <div class="card-limit-label">VALIDADE</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:14px;">09/27</div>
+            </div>
+          </div>
+        </div>
+        <div class="credit-card blue">
+          <div class="card-chip">🔵</div>
+          <div class="card-number">•••• •••• •••• 7203</div>
+          <div class="card-bottom">
+            <div>
+              <div class="card-holder">TITULAR</div>
+              <div class="card-name">QI CLIENTE</div>
+            </div>
+            <div class="card-expiry">
+              <div class="card-limit-label">VALIDADE</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:14px;">03/26</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-stats">
+        <div class="c-stat">
+          <div class="c-stat-val" style="color:var(--accent3)">R$ 1.380,00</div>
+          <div class="c-stat-lbl">Fatura atual</div>
+          <div class="prog-bar"><div class="prog-fill" style="width:27%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="c-stat">
+          <div class="c-stat-val">R$ 5.000,00</div>
+          <div class="c-stat-lbl">Limite total</div>
+        </div>
+        <div class="c-stat">
+          <div class="c-stat-val" style="color:var(--success)">R$ 3.620,00</div>
+          <div class="c-stat-lbl">Limite disponível</div>
+        </div>
+        <div class="c-stat">
+          <div class="c-stat-val" style="color:var(--accent2)">Ativo</div>
+          <div class="c-stat-lbl">Status do cartão</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <span class="section-title">Últimas compras</span>
+        <a class="see-all">Ver fatura completa →</a>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="recent-item"><div class="t-icon out">🛒</div><div class="t-info"><div class="t-desc">Supermercado Extra</div><div class="t-date">10 Dez · 1x</div></div><div class="t-val out">- R$ 320,00</div></div>
+        <div class="recent-item"><div class="t-icon out">⛽</div><div class="t-info"><div class="t-desc">Posto Shell</div><div class="t-date">09 Dez · 1x</div></div><div class="t-val out">- R$ 180,00</div></div>
+        <div class="recent-item"><div class="t-icon out">🍕</div><div class="t-info"><div class="t-desc">iFood – Pedido</div><div class="t-date">08 Dez · 1x</div></div><div class="t-val out">- R$ 62,00</div></div>
+        <div class="recent-item"><div class="t-icon out">📦</div><div class="t-info"><div class="t-desc">Amazon – Compra</div><div class="t-date">07 Dez · 3x</div></div><div class="t-val out">- R$ 818,00</div></div>
+      </div>
+
+      <div class="card-actions">
+        <button class="card-action-btn" onclick="alert('Fatura paga! ✅')">Pagar fatura</button>
+        <button class="card-action-btn" onclick="alert('Cartão bloqueado temporariamente 🔒')">🔒 Bloquear cartão</button>
+        <button class="card-action-btn" onclick="alert('Limite ajustado!')">Ajustar limite</button>
+        <button class="card-action-btn" onclick="alert('Parcelamento solicitado!')">Parcelar fatura</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SCREEN 8: SUCESSO ═══════ -->
+<div id="s-sucesso" class="screen">
+  <div class="success-container">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Operação realizada com sucesso!</div>
+    <div class="success-sub">Sua transação foi processada e confirmada.</div>
+    <div class="success-detail">
+      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val" id="s-tipo">Transferência</span></div>
+      <div class="detail-row"><span class="detail-key">Valor</span><span class="detail-val" id="s-valor">R$ 350,00</span></div>
+      <div class="detail-row"><span class="detail-key">Data/Hora</span><span class="detail-val" id="s-data">—</span></div>
+      <div class="detail-row"><span class="detail-key">Código</span><span class="detail-val" id="s-cod">—</span></div>
+    </div>
+    <div class="success-btns">
+      <button class="btn-outline" onclick="goTo('s-dashboard')">← Voltar ao início</button>
+      <button class="btn-block" style="margin-top:0" onclick="alert('Comprovante gerado!')">Baixar comprovante</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL CONFIRMAÇÃO ═══════ -->
+<div id="confirm-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">Confirmar operação</div>
+    <div class="modal-sub">Revise os dados antes de confirmar</div>
+    <div class="modal-row"><span style="color:var(--text2)">Tipo</span><span style="font-weight:600" id="m-tipo">Transferência TED</span></div>
+    <div class="modal-row"><span style="color:var(--text2)">Destinatário</span><span style="font-weight:600" id="m-dest">Pedro Augusto</span></div>
+    <div class="modal-row"><span style="color:var(--text2)">Valor</span><span style="font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--accent)" id="m-valor">R$ 350,00</span></div>
+    <div class="modal-row"><span style="color:var(--text2)">Data</span><span style="font-weight:600" id="m-data">Hoje</span></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmOp()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── NAVIGATION ──
+  function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ── MODAL ──
+  function openModal() {
+    const now = new Date();
+    document.getElementById('m-data').textContent = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('confirm-modal').classList.add('open');
+  }
+  function closeModal() {
+    document.getElementById('confirm-modal').classList.remove('open');
+  }
+  function confirmOp() {
+    closeModal();
+    const now = new Date();
+    document.getElementById('s-data').textContent = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
+    document.getElementById('s-cod').textContent = 'E' + Math.random().toString().slice(2,14).toUpperCase();
+    document.getElementById('s-tipo').textContent = document.getElementById('m-tipo').textContent;
+    document.getElementById('s-valor').textContent = document.getElementById('m-valor').textContent;
+    goTo('s-sucesso');
+  }
+
+  // ── TAB SWITCH ──
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  // ── MONEY FORMAT ──
+  function formatMoney(el) {
+    let v = el.value.replace(/\D/g, '');
+    if (!v) { el.value = ''; return; }
+    v = (parseInt(v) / 100).toFixed(2);
+    el.value = 'R$ ' + v.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    document.getElementById('m-valor').textContent = el.value || 'R$ 0,00';
+  }
+
+  // ── PIX KEY SELECT ──
+  function selectKey(el) {
+    document.querySelectorAll('.key-chip').forEach(k => k.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ── BOLETO ──
+  function parseBoleto(el) {
+    const v = el.value.trim();
+    const details = document.getElementById('boleto-details');
+    const barcodeLines = document.getElementById('barcode-lines');
+    const barcodeNum = document.getElementById('barcode-num');
+    if (v.length > 20) {
+      details.style.display = 'block';
+      // Generate barcode bars
+      barcodeLines.innerHTML = '';
+      const seed = v.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+      const rand = (i) => ((seed * 1664525 + i * 22695477 + 1013904223) & 0xffffffff) >>> 0;
+      for (let i = 0; i < 60; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.width = (rand(i) % 3 + 1) + 'px';
+        bar.style.flexGrow = '0';
+        barcodeLines.appendChild(bar);
+      }
+      barcodeNum.textContent = v.slice(0, 10) + '...' + v.slice(-10);
+      document.getElementById('m-tipo').textContent = 'Pagamento de Boleto';
+      document.getElementById('m-dest').textContent = 'CEMIG – Energia Elétrica';
+      document.getElementById('m-valor').textContent = 'R$ 180,00';
+    } else {
+      details.style.display = 'none';
+      barcodeLines.innerHTML = '';
+      barcodeNum.textContent = '—';
+    }
+  }
+
+  // ── FILTER BTNS ──
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.closest('.filter-bar').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // Click outside modal closes it
+  document.getElementById('confirm-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+</body>
+</html>
